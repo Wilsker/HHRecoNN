@@ -276,6 +276,7 @@ def load_data(inputPath,column_headers,output_dir):
         n_saved_entries = 0
         for entry in range(0,nentries):
             input_ttree.GetEntry(entry)
+
             if entry % 100 == 0:
                 print(entry)
             if input_ttree.N_goodJets < 4 or (input_ttree.N_goodElectrons+input_ttree.N_goodMuons)>0.:
@@ -283,11 +284,12 @@ def load_data(inputPath,column_headers,output_dir):
             this_event = Event(input_ttree)
             event_ID = this_event.unique_id
 
-            if input_ttree.N_goodJets != 4:
-                continue
+            #if input_ttree.N_goodJets != 4:
+            #    continue
 
             # Matrix of all possible dR(recojet,genQ)
             this_event.create_dR_matrix()
+
             # List of indices of dR *assigned* jet-quark pairs in dR matrix
             mindR_coordinates_ = dRmatch_qj(this_event.dR_matrix) # only 4 quarks so max entries == 4
 
@@ -295,14 +297,14 @@ def load_data(inputPath,column_headers,output_dir):
             # List of matched jet lorentz vectors
             match_ordered_jets = []
             tmp_list = []
-            # Loop over coordinates list and check if dR fulfills matching requirements
+            # Loop over assigned pairings and check if dR fulfills matching requirements
             for coords_ in mindR_coordinates_:
                 if this_event.dR_matrix.item(coords_[0],coords_[1]) <= 0.4:
                     NMatched_jets+=1
                 # Get jet object
                 match_ordered_jets.append(this_event.good_jets_vector[coords_[0]])
 
-            # Require four jets are matched to the W boson for 'good' events
+            # Require four jets are matched to the W bosons decay products for 'good' events
             nmatched_jets_h.Fill(NMatched_jets)
             n_jets_h.Fill(input_ttree.N_goodJets)
             if NMatched_jets < 4:
@@ -310,7 +312,7 @@ def load_data(inputPath,column_headers,output_dir):
 
             # Test a limited number of entries for debugging
             n_saved_entries += 1
-            if n_saved_entries > 50000:
+            if n_saved_entries > 10000:
                 break
 
             # Create list of indices of assigned recojets in jets list
@@ -321,12 +323,6 @@ def load_data(inputPath,column_headers,output_dir):
             for jet_index_ in range(0,len(this_event.good_jets_vector)):
                 if jet_index_ not in matched_jet_indices:
                     match_ordered_jets.append(this_event.good_jets_vector[jet_index_])
-
-            pT_matched_jet_list = [
-            this_event.good_jets_vector[matched_jet_indices[0]].LorentzVector.Pt(),
-            this_event.good_jets_vector[matched_jet_indices[1]].LorentzVector.Pt(),
-            this_event.good_jets_vector[matched_jet_indices[2]].LorentzVector.Pt(),
-            this_event.good_jets_vector[matched_jet_indices[3]].LorentzVector.Pt()]
 
             min_dR_jet_quark.Fill(this_event.dR_matrix[mindR_coordinates_[0][0],mindR_coordinates_[0][1]])
             submin_dR_jet_quark.Fill(this_event.dR_matrix[mindR_coordinates_[1][0],mindR_coordinates_[1][1]])
@@ -462,10 +458,10 @@ def load_data(inputPath,column_headers,output_dir):
                 if label==1:
                     n_signal_perms+=1
 
-                if label == 0:
-                    print('Matched jets pt: %s , %s , %s , %s' % (match_ordered_jets[0].LorentzVector.Pt(), match_ordered_jets[1].LorentzVector.Pt(), match_ordered_jets[2].LorentzVector.Pt(), match_ordered_jets[3].LorentzVector.Pt()))
-                    print("Perm jet 0 pt = %s, Perm jet 1 pt = %s, Perm jet 2 pt = %s, Perm jet 3 pt = %s" % (perm_[0].LorentzVector.Pt(), perm_[1].LorentzVector.Pt(), perm_[2].LorentzVector.Pt(), perm_[3].LorentzVector.Pt()))
-                    print("Signal/background: ", label)
+                #if label == 0:
+                #    print('Matched jets pt: %s , %s , %s , %s' % (match_ordered_jets[0].LorentzVector.Pt(), match_ordered_jets[1].LorentzVector.Pt(), match_ordered_jets[2].LorentzVector.Pt(), match_ordered_jets[3].LorentzVector.Pt()))
+                #    print("Perm jet 0 pt = %s, Perm jet 1 pt = %s, Perm jet 2 pt = %s, Perm jet 3 pt = %s" % (perm_[0].LorentzVector.Pt(), perm_[1].LorentzVector.Pt(), perm_[2].LorentzVector.Pt(), perm_[3].LorentzVector.Pt()))
+                #    print("Signal/background: ", label)
 
                 tmp_list.append(label)
                 tmp_list.append(event_ID)
